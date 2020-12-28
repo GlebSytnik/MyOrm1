@@ -3,8 +3,7 @@ package org.example;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-
-public class UtilWorkDataBase {
+public class ParsingTableDataBase {
 
     public static String[] getColumnNames(ResultSetMetaData metadata) throws SQLException {
         int columnCount = metadata.getColumnCount();
@@ -18,6 +17,4 @@ public class UtilWorkDataBase {
     public int getColumnCount(ResultSetMetaData metadata) throws SQLException {
         return metadata.getColumnCount();
     }
-
-
 }

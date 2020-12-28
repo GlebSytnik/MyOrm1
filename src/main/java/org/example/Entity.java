@@ -1,8 +1,20 @@
 package org.example;
 
 public class Entity {
-    public int id;
-    public String firstName;
-    public String lastName;
-    public String email;
+    private Integer id;
+    private String firstName;
+    private String lastName;
+    private String email;
+
+    public Entity() {
+
+    }
+
+    public Entity(Integer id, String firstName, String lastName, String email) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
+
 }
