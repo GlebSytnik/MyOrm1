@@ -19,7 +19,6 @@ public class ParsingObject {
             String resultclassName = " ";
             if (objectForTable.equals(String.class)) {
                 resultclassName = "VARCHAR";
-
                 return resultclassName;
             } else if (objectForTable.equals(Integer.class)) {
                 resultclassName = "INTEGER";
@@ -77,6 +76,19 @@ public class ParsingObject {
             e.toString();
         }
         return object;
+    }
+
+    static Object createConcreteObject (Object object){
+        Class clazz = object.getClass();
+        Object newObject = null;
+        try {
+            newObject = clazz.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return newObject;
     }
 
 }

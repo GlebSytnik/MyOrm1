@@ -1,13 +1,11 @@
 package org.example;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class SqlPostgres {
 
-    public static boolean executeSQL(Connection connection, String sql){
+    public static boolean executeSQL(Connection connection, String sql) {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
@@ -25,7 +23,7 @@ public class SqlPostgres {
     public static String getSqlQueryCreate(Map<String, Object> nameAndTypeField, Object objectForTable) {
         String tableName = ParsingObject.getNameTable(objectForTable);
         String fields = createFields(nameAndTypeField);
-        return String.format("create table if not exists %s ( %s );" , tableName, fields);
+        return String.format("create table if not exists %s ( %s );", tableName, fields);
     }
 
     private static String createFields(Map<String, Object> nameAndTypeField) {
@@ -34,85 +32,120 @@ public class SqlPostgres {
         while (itr.hasNext()) {
             Map.Entry<String, Object> next = itr.next();
             fields.append(next.getKey()).append(" ").append(ParsingObject.getTypeObject(next.getValue()));
-            if (itr.hasNext()){
+            if (itr.hasNext()) {
                 fields.append(",");
             }
         }
         return fields.toString();
     }
 
-    static String getInsertSQL(Object objectForTable, Map<String, String> nameAndValueField) {
-        String sql = "insert into " + ParsingObject.getNameTable(objectForTable) + " (";
-        String items = "";
-        String itemValues = "";
-        Set<String> setNameAndValue = nameAndValueField.keySet();
-        for (String item : setNameAndValue) {
-            String itemValue = nameAndValueField.get(item);
-            if (!"".equals(itemValue)) {
-                items = items + item + ",";
-                itemValues = itemValues + "'" + itemValue + "'" + ",";
-            }
-        }
-        items = items.substring(0, items.length() - 1) + ")";
-        itemValues = itemValues.substring(0, itemValues.length() - 1) + ");";
-        String result = sql + items + " VALUES(" + itemValues;
-        return result;
-    }
-
-    static  String getInsertFieldsNameSqlBuilder( Map<String, String> nameAndValueField){
-        StringBuilder fieldsName = new StringBuilder();
-        StringBuilder fieldsValue = new StringBuilder();
-        Iterator<Map.Entry<String, String>> itr = nameAndValueField.entrySet().iterator();
-        while(itr.hasNext()){
-            Map.Entry<String, String> next = itr.next();
-            fieldsName.append(next.getKey()).append(" ");
-            fieldsValue.append(next.getValue());
-            if (itr.hasNext()){
-                fieldsName.append(",");
-                fieldsValue.append( ",");
-            }
-
-        }
-        //fieldsValue.append(")");
-        String result =fieldsName.toString();
-        return result;
-    }
-    static  String getInsertFieldsValueSqlBuilder( Map<String, String> nameAndValueField){
-        StringBuilder fieldsName = new StringBuilder();
-        StringBuilder fieldsValue = new StringBuilder();
-        Iterator<Map.Entry<String, String>> itr = nameAndValueField.entrySet().iterator();
-        while(itr.hasNext()){
-            Map.Entry<String, String> next = itr.next();
-            fieldsName.append(next.getKey()).append(" ");
-            fieldsValue.append("'" + next.getValue()+"'").append(" ");
-            if (itr.hasNext()){
-                fieldsName.append(",");
-                fieldsValue.append( ",");
-            }
-
-        }
-        //fieldsValue.append(")");
-        String result =fieldsValue.toString();
-        return result;
-    }
-
-    static String getInsertSqlMy(Object objectForTable, Map<String, String> nameAndValueField){
+    static String getInsertSql(Object objectForTable, Map<String, String> nameAndValueField) {
         String nameTable = ParsingObject.getNameTable(objectForTable);
         String valueField = getInsertFieldsValueSqlBuilder(nameAndValueField);
         String nameField = getInsertFieldsNameSqlBuilder(nameAndValueField);
-        String result = String.format("insert into  %s (%s) VALUES   ( %s );" , nameTable,nameField, valueField);
+        String result = String.format("insert into  %s (%s) VALUES ( %s );", nameTable, nameField, valueField);
         return result;
-
     }
 
-    public static void main(String[] args) {
-        Entity entity2 = new Entity(3,"qwe","asd","gmail");
-        Map<String,String> map = new LinkedHashMap<>();
-        map.put("id","1");
-        map.put("name" , "Sam");
-        getInsertSqlMy(entity2,map);
+    static String getInsertFieldsNameSqlBuilder(Map<String, String> nameAndValueField) {
+        StringBuilder fieldsName = new StringBuilder();
+        Iterator<Map.Entry<String, String>> itr = nameAndValueField.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<String, String> next = itr.next();
+            fieldsName.append(next.getKey()).append(" ");
+            if (itr.hasNext()) {
+                fieldsName.append(",");
+            }
+        }
+        String result = fieldsName.toString();
+        return result;
     }
 
+    static String getInsertFieldsValueSqlBuilder(Map<String, String> nameAndValueField) {
+        StringBuilder fieldsValue = new StringBuilder();
+        Iterator<Map.Entry<String, String>> itr = nameAndValueField.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<String, String> next = itr.next();
+            fieldsValue.append("'" + next.getValue() + "'").append(" ");
+            if (itr.hasNext()) {
+                fieldsValue.append(",");
+            }
+        }
+        String result = fieldsValue.toString();
+        return result;
+    }
+
+    static String getSqlUpdate(int id, Object objectForTable, Map<String, String> nameAndValueField) {
+        String nameTable = ParsingObject.getNameTable(objectForTable);
+        String update = getFieldAndValueSqlUpdate(nameAndValueField);
+        String result = String.format("update %s  set  %s  WHERE id = %d ;", nameTable, update, id);
+        return result;
+    }
+
+    static String getFieldAndValueSqlUpdate(Map<String, String> nameAndValueField) {
+        StringBuilder updateData = new StringBuilder();
+        Iterator<Map.Entry<String, String>> itr = nameAndValueField.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<String, String> next = itr.next();
+            updateData.append(next.getKey()).append(" = ").append("'" + next.getValue() + "'").append(" ");
+            if (itr.hasNext()) {
+                updateData.append(",");
+            }
+        }
+        String result = updateData.toString();
+        return result;
+    }
+
+    static String getStringDeleteById(int id, Object objectForTable) {
+        String name = ParsingObject.getNameTable(objectForTable);
+        String result = String.format("DELETE FROM %s WHERE id = %d", name, id);
+        return result;
+    }
+
+    static String getStringFindById(int id, Object objectForTable) {
+        String name = ParsingObject.getNameTable(objectForTable);
+        String result = String.format("SELECT * FROM %s WHERE id = %d", name, id);
+        return result;
+    }
+
+    static Set<String> getSetNameBase(Connection connection, Object object, int id) {
+        try {
+            String sql = getStringFindById(id, object);
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+            Set<String> nameSetBase = new LinkedHashSet<>();
+
+            for (int i = 1; i <= columnCount; i++) {
+                String nameColumn = rsmd.getColumnName(i);
+                nameSetBase.add(nameColumn);
+            }
+            return nameSetBase;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
+
+    static List<Object> getListValueBase(Connection connection, Object object, int id) {
+        try {
+            String sql = getStringFindById(id, object);
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+            List<Object> listValue = new ArrayList<>();
+            Set<String> nameColumnBase = getSetNameBase(connection, object, id);
+            if (rs.next()) {
+                for (String nameObject : nameColumnBase) {
+                    listValue.add(rs.getObject(nameObject));
+                }
+            }
+            return listValue;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
 
 

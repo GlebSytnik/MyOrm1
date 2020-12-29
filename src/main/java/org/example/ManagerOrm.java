@@ -14,7 +14,15 @@ public class ManagerOrm {
     }
 
     public static void insertTable(Object object) {
-        SqlPostgres.executeSQL(ConnectionHolderPostgres.getConnection(), SqlPostgres.getInsertSqlMy(object, ParsingObject.getNameAndValueField(object)));
+        SqlPostgres.executeSQL(ConnectionHolderPostgres.getConnection(), SqlPostgres.getInsertSql(object, ParsingObject.getNameAndValueField(object)));
+    }
+
+    public static void updateTable(int id, Object object) {
+        SqlPostgres.executeSQL(ConnectionHolderPostgres.getConnection(),SqlPostgres.getSqlUpdate(id,object,ParsingObject.getNameAndValueField(object)));
+    }
+
+    public static void deleteById(int id,Object object){
+        SqlPostgres.executeSQL(ConnectionHolderPostgres.getConnection(),SqlPostgres.getStringDeleteById(id,object));
     }
 
 }

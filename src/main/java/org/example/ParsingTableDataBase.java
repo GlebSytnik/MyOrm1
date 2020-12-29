@@ -1,7 +1,6 @@
 package org.example;
 
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ParsingTableDataBase {
 
@@ -17,4 +16,8 @@ public class ParsingTableDataBase {
     public int getColumnCount(ResultSetMetaData metadata) throws SQLException {
         return metadata.getColumnCount();
     }
+
+
+
+
 }
