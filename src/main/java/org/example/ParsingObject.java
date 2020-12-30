@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.exception.UnknownObjectTypeExeception;
+
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -78,7 +79,7 @@ public class ParsingObject {
         return object;
     }
 
-    static Object createConcreteObject (Object object){
+    static Object createConcreteObject(Object object) {
         Class clazz = object.getClass();
         Object newObject = null;
         try {
@@ -90,5 +91,4 @@ public class ParsingObject {
         }
         return newObject;
     }
-
 }

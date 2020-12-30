@@ -16,8 +16,4 @@ public class ParsingTableDataBase {
     public int getColumnCount(ResultSetMetaData metadata) throws SQLException {
         return metadata.getColumnCount();
     }
-
-
-
-
 }
