@@ -25,4 +25,8 @@ public class ManagerOrm {
     public static void deleteById(int id, Object object) {
         SqlPostgres.executeSQL(ConnectionHolderPostgres.getConnection(), SqlPostgres.getStringDeleteById(id, object));
     }
+
+    public static <T> T getObjectById(T object, int id) throws NoSuchFieldException, IllegalAccessException {
+        return SqlPostgres.getObjectById(ConnectionHolderPostgres.getConnection(), object, id);
+    }
 }

@@ -1,5 +1,6 @@
 package org.example;
 
+import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
 
@@ -146,6 +147,29 @@ public class SqlPostgres {
         }
         return null;
     }
+
+
+    static <T> T createConcreteObject(T object) throws IllegalAccessException, InstantiationException {
+        T concreteObject = (T) ParsingObject.createConcreteObject(object);
+        Class clazz = concreteObject.getClass();
+        return concreteObject;
+    }
+
+    static <T> T getObjectById(Connection connection, T object, int id) throws NoSuchFieldException, IllegalAccessException {
+        List<Object> listValue = getListValueBase(connection, object, id);
+        Set<String> nameBase = getSetNameBase(connection, object, 1);
+        T concreteObject = (T) ParsingObject.createConcreteObject(object);
+        Field[] fields = concreteObject.getClass().getDeclaredFields();
+        int i = 0;
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (f.get(concreteObject) == null) {
+                f.set(concreteObject, listValue.get(i++));
+            }
+        }
+        return concreteObject;
+    }
 }
+
 
 
