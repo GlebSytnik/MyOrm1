@@ -30,6 +30,7 @@ public class ParsingObjectTest {
     public void getTypeObject() {
         String expected = ParsingObject.getTypeObject(String.class);
         String actual = "VARCHAR";
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -57,12 +58,8 @@ public class ParsingObjectTest {
     @Test
     public void getValue() {
         Object expected = ParsingObject.getValue(entity, "id");
-        Object actual = new Integer(1);
+        Object actual = 1;
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void createConcreteObject() {
     }
 
 }

@@ -25,7 +25,6 @@ public class ParsingObject {
                 resultclassName = "INTEGER";
                 return resultclassName;
             } else {
-
                 throw new UnknownObjectTypeExeception("Unknown current type object");
             }
         } catch (UnknownObjectTypeExeception unknownObjectTypeExeception) {
@@ -77,18 +76,5 @@ public class ParsingObject {
             e.toString();
         }
         return object;
-    }
-
-    static Object createConcreteObject(Object object) {
-        Class clazz = object.getClass();
-        Object newObject = null;
-        try {
-            newObject = clazz.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return newObject;
     }
 }

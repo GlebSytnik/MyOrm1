@@ -148,17 +148,14 @@ public class SqlPostgres {
         return null;
     }
 
-
-    static <T> T createConcreteObject(T object) throws IllegalAccessException, InstantiationException {
-        T concreteObject = (T) ParsingObject.createConcreteObject(object);
-        Class clazz = concreteObject.getClass();
+    static <T> T createConcreteObject(T object) {
+        T concreteObject = (T) object;
         return concreteObject;
     }
 
-    static <T> T getObjectById(Connection connection, T object, int id) throws NoSuchFieldException, IllegalAccessException {
+    static <T> T getObjectById(Connection connection, T object, int id) throws IllegalAccessException {
         List<Object> listValue = getListValueBase(connection, object, id);
-        Set<String> nameBase = getSetNameBase(connection, object, 1);
-        T concreteObject = (T) ParsingObject.createConcreteObject(object);
+        T concreteObject = (T) object;
         Field[] fields = concreteObject.getClass().getDeclaredFields();
         int i = 0;
         for (Field f : fields) {

@@ -13,6 +13,7 @@ public class SqlPostgresTest {
 
     private Entity entity;
     private Map<String, String> nameAndValueField;
+    private Map<String, Object> nameAndTypeField;
 
     @Before
     public void setUp() {
@@ -22,10 +23,17 @@ public class SqlPostgresTest {
         nameAndValueField.put("firstName", "Roma");
         nameAndValueField.put("lastName", "Det");
         nameAndValueField.put("email", "gmail");
+
+        nameAndTypeField = new LinkedHashMap<>();
+        nameAndTypeField.put("id", Integer.class);
+        nameAndTypeField.put("firstName", String.class);
+        nameAndTypeField.put("lastName", String.class);
+        nameAndTypeField.put("email", String.class);
     }
 
     @Test
-    public void executeSQL() {
+    public void executeSQL() throws SQLException {
+        assertTrue(SqlPostgres.executeSQL(ConnectionHolderPostgres.getConnection(), "SELECT * FROM entity"));
     }
 
     @Test
@@ -33,11 +41,13 @@ public class SqlPostgresTest {
         String expected = SqlPostgres.createTable(entity);
         String actual = "create table if not exists entity ( id INTEGER,firstName VARCHAR,lastName VARCHAR,email VARCHAR );";
         assertEquals(expected, actual);
-
     }
 
     @Test
     public void getSqlQueryCreate() {
+        String expected = SqlPostgres.getSqlQueryCreate(nameAndTypeField, entity);
+        String actual = "create table if not exists entity ( id INTEGER,firstName VARCHAR,lastName VARCHAR,email VARCHAR );";
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -50,11 +60,15 @@ public class SqlPostgresTest {
     @Test
     public void getInsertFieldsNameSqlBuilder() {
         String expected = SqlPostgres.getInsertFieldsNameSqlBuilder(nameAndValueField);
-        String actual = "'1' ,'Roma' ,'Det' ,'gmail' ";
+        String actual = "id ,firstName ,lastName ,email ";
+        assertEquals(expected, actual);
     }
 
     @Test
     public void getInsertFieldsValueSqlBuilder() {
+        String expected = SqlPostgres.getInsertFieldsValueSqlBuilder(nameAndValueField);
+        String actual = "'1' ,'Roma' ,'Det' ,'gmail' ";
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -86,7 +100,7 @@ public class SqlPostgresTest {
     }
 
     @Test
-    public void getSetNameBase() {
+    public void getSetNameBase() throws SQLException {
         Set<String> expected = SqlPostgres.getSetNameBase(ConnectionHolderPostgres.getConnection(), entity, 1);
         Set<String> actual = new LinkedHashSet<>();
         actual.add("id");
@@ -97,26 +111,35 @@ public class SqlPostgresTest {
     }
 
     @Test
-    public void getListValueBase() {
+    public void getListValueBase() throws SQLException {
         List<Object> expected = SqlPostgres.getListValueBase(ConnectionHolderPostgres.getConnection(), entity, 1);
         List<Object> actual = new ArrayList<>();
-        actual.add(0, new Integer(1));
-        actual.add(1, new String("Roma"));
-        actual.add(2, new String("Las"));
-        actual.add(3, new String("gmail"));
+        actual.add(0, 1);
+        actual.add(1, "Roma");
+        actual.add(2, "Las");
+        actual.add(3, "gmail");
         assertEquals(expected, actual);
     }
 
     @Test
-    public void createConcreteObject() throws InstantiationException, IllegalAccessException {
-        Object expectedEntity = SqlPostgres.createConcreteObject(entity);
-        Object actual = expectedEntity;
-        assertEquals(expectedEntity, actual);
+    public void createConcreteObject() {
+        Entity expectedEntity = SqlPostgres.createConcreteObject(entity);
+        expectedEntity.setId(1);
+        expectedEntity.setFirstName("Roma");
+        expectedEntity.setLastName("Det");
+        expectedEntity.setEmail("gmail");
+        Entity actual = entity;
+        assertTrue(expectedEntity.equals(actual));
     }
 
     @Test
-    public void getObjectById() {
-
+    public void getObjectById() throws NoSuchFieldException, IllegalAccessException, SQLException {
+        Entity expectedEntity = SqlPostgres.getObjectById(ConnectionHolderPostgres.getConnection(), entity, 1);
+        Entity actual = new Entity();
+        actual.setId(1);
+        actual.setFirstName("Roma");
+        actual.setLastName("Las");
+        actual.setEmail("gmail");
+        assertTrue(expectedEntity.equals(actual));
     }
-
 }
