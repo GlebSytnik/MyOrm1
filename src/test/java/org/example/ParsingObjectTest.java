@@ -1,10 +1,9 @@
 package org.example;
 
+import org.example.entity.Entity;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,12 +14,12 @@ public class ParsingObjectTest {
 
     @Before
     public void setUp() {
-        entity = new Entity(1, "Roma", "Det", "gmail");
+        entity = new Entity( "Roma", "Det", "gmail");
     }
 
     @Test
     public void getNameTable() {
-        String expected = ParsingObject.getNameTable(entity);
+        String expected = ParsingObject.getNameTable(entity.getClass());
         String actual = "entity";
         assertEquals(expected, actual);
 
@@ -35,7 +34,7 @@ public class ParsingObjectTest {
 
     @Test
     public void getNameAndTypeField() {
-        Map<String, Object> expected = ParsingObject.getNameAndTypeField(entity);
+        Map<String, Object> expected = ParsingObject.getNameAndTypeField(entity.getClass());
         Map<String, Object> actual = new LinkedHashMap<>();
         actual.put("id", Integer.class);
         actual.put("firstName", String.class);

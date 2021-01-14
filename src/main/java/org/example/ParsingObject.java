@@ -1,5 +1,8 @@
 package org.example;
 
+import org.example.entity.Entity;
+import org.example.exception.NotNameAndTypeFieldException;
+import org.example.exception.NotValueObjectException;
 import org.example.exception.UnknownObjectTypeExeception;
 
 import java.lang.reflect.Field;
@@ -7,13 +10,11 @@ import java.util.*;
 
 public class ParsingObject {
 
-    public static String getNameTable(Object objectForTable) {
-        Class<? extends Object> classThisObject = objectForTable.getClass();
-        String getAllClassName = classThisObject.getName();
-        String[] words = getAllClassName.split("\\.");
-        String className = words[words.length - 1].toLowerCase(Locale.ROOT);
-        return className;
+    public static String getNameTable(Class objectForTable) {
+        return   objectForTable.getSimpleName().toLowerCase();
     }
+
+
 
     public static String getTypeObject(Object objectForTable) {
         try {
@@ -24,21 +25,27 @@ public class ParsingObject {
             } else if (objectForTable.equals(Integer.class)) {
                 resultclassName = "INTEGER";
                 return resultclassName;
-            } else {
+            } else if (objectForTable.equals(Long.class)) {
+                resultclassName = "INTEGER";
+                return resultclassName;
+            }
+            else {
                 throw new UnknownObjectTypeExeception("Unknown current type object");
             }
         } catch (UnknownObjectTypeExeception unknownObjectTypeExeception) {
-            unknownObjectTypeExeception.printStackTrace();
+            throw new UnknownObjectTypeExeception("Unknown current type object");
         }
-        return "";
+
     }
 
-    public static Map<String, Object> getNameAndTypeField(Object objectForTable) {
-        Class<? extends Object> classThisObject = objectForTable.getClass();
-        Field[] declaredFields = classThisObject.getDeclaredFields();
+    public static Map<String, Object> getNameAndTypeField(Class objectForTable) {
+        Field[] declaredFields = objectForTable.getDeclaredFields();
         Map<String, Object> nameAndTypeObject = new LinkedHashMap<>();
         for (Field field : declaredFields) {
             nameAndTypeObject.put(field.getName(), field.getType());
+        }
+        if(nameAndTypeObject == null){
+            throw new NotNameAndTypeFieldException("This object has no name or type");
         }
         return nameAndTypeObject;
     }
@@ -73,8 +80,13 @@ public class ParsingObject {
             field.setAccessible(true);
             return field.get(object);
         } catch (Exception e) {
-            e.toString();
+            throw new NotValueObjectException("This object does not value");
         }
-        return object;
+    }
+
+    public static void main(String[] args) {
+        Entity entity = new Entity();
+        Class classEntity = entity.getClass();
+
     }
 }

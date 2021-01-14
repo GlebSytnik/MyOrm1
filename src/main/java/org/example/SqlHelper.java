@@ -1,38 +1,69 @@
 package org.example;
 
+import org.example.db.ConnectionHolderPostgres;
+import org.example.exception.BadConnectionExeception;
+import org.example.exception.NotListValueBaseException;
+import org.example.exception.NotSetNameBaseException;
+
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
 
-public class SqlPostgres {
+public class SqlHelper {
 
     public static boolean executeSQL(Connection connection, String sql) {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.execute();
+            return preparedStatement.execute();
         } catch (SQLException throwable) {
-            throwable.printStackTrace();
-            return false;
+            throw new BadConnectionExeception("Bad connection");
         }
-        return true;
     }
 
-    public static String createTable(Object objectForTable) throws SQLException {
+    public static long executeInsert(String sql) {
+        try (Connection connection = ConnectionHolderPostgres.getConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            long id = 0;
+            while (resultSet.next()) {
+                id = resultSet.getLong("id");
+            }
+            return id;
+        } catch (SQLException e) {
+            throw new BadConnectionExeception("Bad connection");
+        }
+    }
+
+    public static String createTable(Class objectForTable) throws SQLException {
         return getSqlQueryCreate(ParsingObject.getNameAndTypeField(objectForTable), objectForTable);
     }
 
-    public static String getSqlQueryCreate(Map<String, Object> nameAndTypeField, Object objectForTable) {
+    public static String dropTable(Class objectForTable) {
+        return getSqlQueryDrop(objectForTable);
+    }
+
+    public static String getSqlQueryDrop(Class objectForTable) {
+        String tableName = ParsingObject.getNameTable(objectForTable);
+        String result = String.format("DROP table if exists %s;", tableName);
+        return result;
+    }
+
+    public static String getSqlQueryCreate(Map<String, Object> nameAndTypeField, Class objectForTable) {
         String tableName = ParsingObject.getNameTable(objectForTable);
         String fields = createFields(nameAndTypeField);
-        return String.format("create table if not exists %s ( %s );", tableName, fields);
+        String result = String.format("create table if not exists  %s ( %s ) ;", tableName, fields);
+        return result;
     }
 
     private static String createFields(Map<String, Object> nameAndTypeField) {
         StringBuilder fields = new StringBuilder();
+       // fields.append("id INTEGER ,");
         Iterator<Map.Entry<String, Object>> itr = nameAndTypeField.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry<String, Object> next = itr.next();
+
             fields.append(next.getKey()).append(" ").append(ParsingObject.getTypeObject(next.getValue()));
+
             if (itr.hasNext()) {
                 fields.append(",");
             }
@@ -40,11 +71,11 @@ public class SqlPostgres {
         return fields.toString();
     }
 
-    static String getInsertSql(Object objectForTable, Map<String, String> nameAndValueField) {
-        String nameTable = ParsingObject.getNameTable(objectForTable);
+    static String getInsertSqlStringReturnId(Object objectForTable, Map<String, String> nameAndValueField) {
+        String nameTable = ParsingObject.getNameTable(objectForTable.getClass());
         String valueField = getInsertFieldsValueSqlBuilder(nameAndValueField);
         String nameField = getInsertFieldsNameSqlBuilder(nameAndValueField);
-        String result = String.format("insert into  %s (%s) VALUES ( %s );", nameTable, nameField, valueField);
+        String result = String.format("insert into  %s (%s) VALUES ( %s ) RETURNING id;", nameTable, nameField, valueField);
         return result;
     }
 
@@ -77,7 +108,7 @@ public class SqlPostgres {
     }
 
     static String getSqlUpdate(int id, Object objectForTable, Map<String, String> nameAndValueField) {
-        String nameTable = ParsingObject.getNameTable(objectForTable);
+        String nameTable = ParsingObject.getNameTable(objectForTable.getClass());
         String update = getFieldAndValueSqlUpdate(nameAndValueField);
         String result = String.format("update %s  set  %s  WHERE id = %d ;", nameTable, update, id);
         return result;
@@ -98,18 +129,18 @@ public class SqlPostgres {
     }
 
     static String getStringDeleteById(int id, Object objectForTable) {
-        String name = ParsingObject.getNameTable(objectForTable);
+        String name = ParsingObject.getNameTable(objectForTable.getClass());
         String result = String.format("DELETE FROM %s WHERE id = %d", name, id);
         return result;
     }
 
-    static String getStringFindById(int id, Object objectForTable) {
-        String name = ParsingObject.getNameTable(objectForTable);
+    static String getStringFindById(long id, Object objectForTable) {
+        String name = ParsingObject.getNameTable(objectForTable.getClass());
         String result = String.format("SELECT * FROM %s WHERE id = %d", name, id);
         return result;
     }
 
-    static Set<String> getSetNameBase(Connection connection, Object object, int id) {
+    static Set<String> getSetNameBase(Connection connection, Object object, long id) {
         try {
             String sql = getStringFindById(id, object);
             Statement statement = connection.createStatement();
@@ -124,12 +155,11 @@ public class SqlPostgres {
             }
             return nameSetBase;
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throw new NotSetNameBaseException("These names are not in the database");
         }
-        return null;
     }
 
-    static List<Object> getListValueBase(Connection connection, Object object, int id) {
+    static List<Object> getListValueBase(Connection connection, Object object, long id) {
         try {
             String sql = getStringFindById(id, object);
             Statement statement = connection.createStatement();
@@ -143,28 +173,75 @@ public class SqlPostgres {
             }
             return listValue;
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new NotListValueBaseException("This object not value in database");
         }
-        return null;
     }
 
-    static <T> T createConcreteObject(T object) {
-        T concreteObject = (T) object;
+    static <T> T createConcreteObject(Class object) {
+        Class T = null;
+        T concreteObject = null;
+        try {
+            concreteObject = (T) object.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
         return concreteObject;
     }
 
-    static <T> T getObjectById(Connection connection, T object, int id) throws IllegalAccessException {
-        List<Object> listValue = getListValueBase(connection, object, id);
-        T concreteObject = (T) object;
-        Field[] fields = concreteObject.getClass().getDeclaredFields();
+    static <T> T getObjectById(Connection connection, Class classObject, long id) throws IllegalAccessException {
+        List<Object> listValue = getListValueBase(connection, classObject, id);
+        Set<String> setNameBase = getSetNameBase(connection, classObject, id);
+        T concreteObject = null;
+        try {
+            concreteObject = (T) classObject.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        Field[] fields = concreteObject.getClass().getSuperclass().getDeclaredFields();
+
         int i = 0;
         for (Field f : fields) {
             f.setAccessible(true);
             if (f.get(concreteObject) == null) {
-                f.set(concreteObject, listValue.get(i++));
+                f.set(concreteObject, new Long((Integer) listValue.get(i++)));
+            }
+        }
+        Field[] fieldsEntity = concreteObject.getClass().getDeclaredFields();
+
+        int g = 1;
+        for (Field f : fieldsEntity) {
+            f.setAccessible(true);
+            if (f.get(concreteObject) == null) {
+                f.set(concreteObject, listValue.get(g++));
             }
         }
         return concreteObject;
+    }
+
+    public static Set<String> getSetTableWithDataBase() {
+        try (Connection connection = ConnectionHolderPostgres.getConnection()) {
+
+            Set<String> nameTable = new LinkedHashSet<>();
+
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT table_name\n" +
+                    "  FROM information_schema.tables\n" +
+                    " WHERE table_schema='public'\n" +
+                    "   AND table_type='BASE TABLE';");
+
+            while (resultSet.next()) {
+                nameTable.add(resultSet.getString(1));
+            }
+            return nameTable;
+        } catch (SQLException throwables) {
+            throw new BadConnectionExeception("Bad connection in methods createTable");
+        }
+    }
+
+    public static void main(String[] args) {
+        Set<String> nameTable = getSetTableWithDataBase();
     }
 }
 

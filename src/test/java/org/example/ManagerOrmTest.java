@@ -1,13 +1,14 @@
 package org.example;
 
 import org.example.db.ConnectionHolderPostgres;
+import org.example.entity.Entity;
 import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import static org.junit.Assert.*;
-
+/*
 public class ManagerOrmTest {
 
     @Test
@@ -21,4 +22,4 @@ public class ManagerOrmTest {
             throwables.printStackTrace();
         }
     }
-}
+}*/

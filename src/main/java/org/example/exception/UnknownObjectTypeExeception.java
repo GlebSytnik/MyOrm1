@@ -1,7 +1,8 @@
 package org.example.exception;
 
-public class UnknownObjectTypeExeception extends  Exception {
+public class UnknownObjectTypeExeception extends  RuntimeException {
+    private String unknownObjectMessage;
     public UnknownObjectTypeExeception(String message) {
-        super((message));
+        this.unknownObjectMessage = message;
     }
 }
