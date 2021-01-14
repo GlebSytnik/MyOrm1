@@ -9,11 +9,9 @@ public class App {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
        ManagerOrm.syncStructure("org.example.entity");
-      //  Entity entity = new Entity("кот", "Мфтроскин", "matroskin.com");
-        // Class<? extends Entity> entity1 = ManagerOrm.insert(entity);
 
-
-
+      Entity entity = new Entity("Кот", "Матроскин", "matroskin.com");
+         Entity entity1 = ManagerOrm.insert(entity);
     }
 }
 

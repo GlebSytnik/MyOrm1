@@ -1,7 +1,8 @@
 package org.example.entity;
 
-public class Entity extends OrmId {
+import org.example.ormId.OrmId;
 
+public class Entity extends OrmId {
 
     private String firstName;
     private String lastName;

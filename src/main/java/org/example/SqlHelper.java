@@ -57,7 +57,7 @@ public class SqlHelper {
 
     private static String createFields(Map<String, Object> nameAndTypeField) {
         StringBuilder fields = new StringBuilder();
-       // fields.append("id INTEGER ,");
+       fields.append("id SERIAL ,");
         Iterator<Map.Entry<String, Object>> itr = nameAndTypeField.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry<String, Object> next = itr.next();
