@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.db.ConnectionHolderPostgres;
 import org.example.entity.Entity;
+import org.example.exception.NotFieldException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ public class SqlHelperTest {
 
     @Test
     public void executeSQL() throws SQLException {
-        assertTrue(SqlHelper.executeSQL(ConnectionHolderPostgres.getConnection(), "SELECT * FROM entity"));
+        assertTrue(SqlHelper.executeSQL("SELECT * FROM entity"));
     }
 
     @Test
@@ -102,7 +103,7 @@ public class SqlHelperTest {
 
     @Test
     public void getSetNameBase() throws SQLException {
-        Set<String> expected = SqlHelper.getSetNameBase(ConnectionHolderPostgres.getConnection(), entity, 1);
+        Set<String> expected = SqlHelper.getSetNameBase( entity, 1);
         Set<String> actual = new LinkedHashSet<>();
         actual.add("id");
         actual.add("firstname");
@@ -113,7 +114,7 @@ public class SqlHelperTest {
 
     @Test
     public void getListValueBase() throws SQLException {
-        List<Object> expected = SqlHelper.getListValueBase(ConnectionHolderPostgres.getConnection(), entity, 1);
+        List<Object> expected = SqlHelper.getListValueBase( entity, 1);
         List<Object> actual = new ArrayList<>();
         actual.add(0, 1);
         actual.add(1, "Roma");
@@ -137,9 +138,9 @@ public class SqlHelperTest {
     public void getObjectById() {
         Entity expectedEntity = null;
         try {
-            expectedEntity = SqlHelper.getObjectById(ConnectionHolderPostgres.getConnection(), entity.getClass(), 1);
+            expectedEntity = SqlHelper.getObjectById( entity.getClass(), 1);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+           throw new NotFieldException("This field don't exist");
         }
         Entity actual = new Entity();
         actual.setId(1L);

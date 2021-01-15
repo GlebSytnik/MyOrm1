@@ -1,20 +1,16 @@
 package org.example;
 
-import org.example.entity.Entity;
 import org.example.exception.NotNameAndTypeFieldException;
 import org.example.exception.NotValueObjectException;
 import org.example.exception.UnknownObjectTypeExeception;
-
 import java.lang.reflect.Field;
 import java.util.*;
 
 public class ParsingObject {
 
     public static String getNameTable(Class objectForTable) {
-        return   objectForTable.getSimpleName().toLowerCase();
+        return objectForTable.getSimpleName().toLowerCase();
     }
-
-
 
     public static String getTypeObject(Object objectForTable) {
         try {
@@ -28,14 +24,12 @@ public class ParsingObject {
             } else if (objectForTable.equals(Long.class)) {
                 resultclassName = "INTEGER";
                 return resultclassName;
-            }
-            else {
+            } else {
                 throw new UnknownObjectTypeExeception("Unknown current type object");
             }
         } catch (UnknownObjectTypeExeception unknownObjectTypeExeception) {
             throw new UnknownObjectTypeExeception("Unknown current type object");
         }
-
     }
 
     public static Map<String, Object> getNameAndTypeField(Class objectForTable) {
@@ -44,7 +38,7 @@ public class ParsingObject {
         for (Field field : declaredFields) {
             nameAndTypeObject.put(field.getName(), field.getType());
         }
-        if(nameAndTypeObject == null){
+        if (nameAndTypeObject == null) {
             throw new NotNameAndTypeFieldException("This object has no name or type");
         }
         return nameAndTypeObject;
@@ -82,11 +76,5 @@ public class ParsingObject {
         } catch (Exception e) {
             throw new NotValueObjectException("This object does not value");
         }
-    }
-
-    public static void main(String[] args) {
-        Entity entity = new Entity();
-        Class classEntity = entity.getClass();
-
     }
 }

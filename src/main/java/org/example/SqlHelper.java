@@ -1,21 +1,25 @@
 package org.example;
 
+import org.apache.log4j.Logger;
 import org.example.db.ConnectionHolderPostgres;
 import org.example.exception.BadConnectionExeception;
+import org.example.exception.NotFieldException;
 import org.example.exception.NotListValueBaseException;
 import org.example.exception.NotSetNameBaseException;
-
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
 
 public class SqlHelper {
 
-    public static boolean executeSQL(Connection connection, String sql) {
-        try {
+    private static Logger logger = Logger.getLogger(SqlHelper.class);
+
+    public static boolean executeSQL(String sql) {
+        try (Connection connection = ConnectionHolderPostgres.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             return preparedStatement.execute();
         } catch (SQLException throwable) {
+            logger.info("Check method executeSQL");
             throw new BadConnectionExeception("Bad connection");
         }
     }
@@ -30,6 +34,7 @@ public class SqlHelper {
             }
             return id;
         } catch (SQLException e) {
+            logger.info("Check method executeInsert");
             throw new BadConnectionExeception("Bad connection");
         }
     }
@@ -57,13 +62,11 @@ public class SqlHelper {
 
     private static String createFields(Map<String, Object> nameAndTypeField) {
         StringBuilder fields = new StringBuilder();
-       fields.append("id SERIAL ,");
+        fields.append("id SERIAL ,");
         Iterator<Map.Entry<String, Object>> itr = nameAndTypeField.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry<String, Object> next = itr.next();
-
             fields.append(next.getKey()).append(" ").append(ParsingObject.getTypeObject(next.getValue()));
-
             if (itr.hasNext()) {
                 fields.append(",");
             }
@@ -140,8 +143,8 @@ public class SqlHelper {
         return result;
     }
 
-    static Set<String> getSetNameBase(Connection connection, Object object, long id) {
-        try {
+    static Set<String> getSetNameBase(Object object, long id) {
+        try (Connection connection = ConnectionHolderPostgres.getConnection()) {
             String sql = getStringFindById(id, object);
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(sql);
@@ -155,17 +158,18 @@ public class SqlHelper {
             }
             return nameSetBase;
         } catch (SQLException throwables) {
+            logger.info("Check methods getSetNameBase");
             throw new NotSetNameBaseException("These names are not in the database");
         }
     }
 
-    static List<Object> getListValueBase(Connection connection, Object object, long id) {
-        try {
+    static List<Object> getListValueBase(Object object, long id) {
+        try (Connection connection = ConnectionHolderPostgres.getConnection()) {
             String sql = getStringFindById(id, object);
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(sql);
             List<Object> listValue = new ArrayList<>();
-            Set<String> nameColumnBase = getSetNameBase(connection, object, id);
+            Set<String> nameColumnBase = getSetNameBase(object, id);
             if (rs.next()) {
                 for (String nameObject : nameColumnBase) {
                     listValue.add(rs.getObject(nameObject));
@@ -183,21 +187,21 @@ public class SqlHelper {
         try {
             concreteObject = (T) object.newInstance();
         } catch (InstantiationException e) {
-            e.printStackTrace();
+           logger.info("This object don't instance,check method createConcreteObject",e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new NotFieldException("This field don't exist");
         }
         return concreteObject;
     }
 
-    static <T> T getObjectById(Connection connection, Class classObject, long id) throws IllegalAccessException {
-        List<Object> listValue = getListValueBase(connection, classObject, id);
-        Set<String> setNameBase = getSetNameBase(connection, classObject, id);
+    static <T> T getObjectById(Class classObject, long id) throws IllegalAccessException {
+        List<Object> listValue = getListValueBase(classObject, id);
+        Set<String> setNameBase = getSetNameBase(classObject, id);
         T concreteObject = null;
         try {
             concreteObject = (T) classObject.newInstance();
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            logger.info("This object don't instance,check method getObjectById",e);
         }
         Field[] fields = concreteObject.getClass().getSuperclass().getDeclaredFields();
 
@@ -222,26 +226,20 @@ public class SqlHelper {
 
     public static Set<String> getSetTableWithDataBase() {
         try (Connection connection = ConnectionHolderPostgres.getConnection()) {
-
             Set<String> nameTable = new LinkedHashSet<>();
-
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT table_name\n" +
                     "  FROM information_schema.tables\n" +
                     " WHERE table_schema='public'\n" +
                     "   AND table_type='BASE TABLE';");
-
             while (resultSet.next()) {
                 nameTable.add(resultSet.getString(1));
             }
             return nameTable;
         } catch (SQLException throwables) {
+            logger.info("Check methods getSetTableWithDataBase");
             throw new BadConnectionExeception("Bad connection in methods createTable");
         }
-    }
-
-    public static void main(String[] args) {
-        Set<String> nameTable = getSetTableWithDataBase();
     }
 }
 
