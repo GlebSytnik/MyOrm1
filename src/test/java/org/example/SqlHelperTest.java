@@ -114,7 +114,7 @@ public class SqlHelperTest {
 
     @Test
     public void getListValueBase() throws SQLException {
-        List<Object> expected = SqlHelper.getListValueBase( entity, 1);
+        List<Object> expected = SqlHelper.getListValueBase(entity, 1);
         List<Object> actual = new ArrayList<>();
         actual.add(0, 1);
         actual.add(1, "Roma");
@@ -138,7 +138,7 @@ public class SqlHelperTest {
     public void getObjectById() {
         Entity expectedEntity = null;
         try {
-            expectedEntity = SqlHelper.getObjectById( entity.getClass(), 1);
+            expectedEntity = SqlHelper.getObjectById(entity, 1);
         } catch (IllegalAccessException e) {
            throw new NotFieldException("This field don't exist");
         }

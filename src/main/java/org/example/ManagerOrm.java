@@ -5,6 +5,7 @@ import org.example.exception.BadConnectionExeception;
 import org.example.exception.NotFieldException;
 import org.example.exception.NotValueObjectException;
 import org.example.exception.UnknownClassException;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
@@ -27,7 +28,7 @@ public class ManagerOrm {
         SqlHelper.executeSQL(SqlHelper.dropTable(object));
     }
 
-    public static <T> T insert(Object objectClass) {
+    public static <T> T insert(T objectClass) {
         Long id = SqlHelper.executeInsert(SqlHelper.getInsertSqlStringReturnId(objectClass, ParsingObject.getNameAndValueField(objectClass)));
         Class<?> classObjectParents = objectClass.getClass().getSuperclass();
         Field field;
@@ -50,9 +51,9 @@ public class ManagerOrm {
         SqlHelper.executeSQL(SqlHelper.getStringDeleteById(id, object));
     }
 
-    public static <T> T getObjectById(Class classObject, long id) {
+    public static <T> T getObjectById(Object objectForName, long id) {
         try {
-            return SqlHelper.getObjectById(classObject, id);
+            return SqlHelper.getObjectById(objectForName, id);
         } catch (IllegalAccessException e) {
             throw new NotFieldException("This field don't exist");
         }
@@ -65,17 +66,10 @@ public class ManagerOrm {
     }
 
     public static void createMyTables(String namePackage) {
-        try {
-            createTableInDataBase(PackageHelper.getClasses(namePackage));
-        } catch (ClassNotFoundException e) {
-            logger.info("Check methods createMyTables");
-            throw new UnknownClassException("Class unknown or not found");
-        } catch (IOException e) {
-            logger.info("Check methods createMyTables", e);
-        }
+        createTableInDataBase(PackageHelper.getClasses(namePackage));
     }
 
-    public static void syncStructure(String packageName) throws IOException, ClassNotFoundException {
+    public static void syncStructure(String packageName) {
         Set<String> nameTable = SqlHelper.getSetTableWithDataBase();
         Class[] allNameClasses = PackageHelper.getClasses(packageName);
         Set<String> nameClasses = new LinkedHashSet<>();

@@ -6,6 +6,7 @@ import org.example.exception.BadConnectionExeception;
 import org.example.exception.NotFieldException;
 import org.example.exception.NotListValueBaseException;
 import org.example.exception.NotSetNameBaseException;
+
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
@@ -75,7 +76,7 @@ public class SqlHelper {
     }
 
     static String getInsertSqlStringReturnId(Object objectForTable, Map<String, String> nameAndValueField) {
-        String nameTable = ParsingObject.getNameTable(objectForTable.getClass());
+        String nameTable = ParsingObject.getNameTable(objectForTable);
         String valueField = getInsertFieldsValueSqlBuilder(nameAndValueField);
         String nameField = getInsertFieldsNameSqlBuilder(nameAndValueField);
         String result = String.format("insert into  %s (%s) VALUES ( %s ) RETURNING id;", nameTable, nameField, valueField);
@@ -138,7 +139,7 @@ public class SqlHelper {
     }
 
     static String getStringFindById(long id, Object objectForTable) {
-        String name = ParsingObject.getNameTable(objectForTable.getClass());
+        String name = ParsingObject.getNameTable(objectForTable);
         String result = String.format("SELECT * FROM %s WHERE id = %d", name, id);
         return result;
     }
@@ -163,13 +164,13 @@ public class SqlHelper {
         }
     }
 
-    static List<Object> getListValueBase(Object object, long id) {
+    static List<Object> getListValueBase(Object objectForName, long id) {
         try (Connection connection = ConnectionHolderPostgres.getConnection()) {
-            String sql = getStringFindById(id, object);
+            String sql = getStringFindById(id, objectForName);
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(sql);
             List<Object> listValue = new ArrayList<>();
-            Set<String> nameColumnBase = getSetNameBase(object, id);
+            Set<String> nameColumnBase = getSetNameBase(objectForName, id);
             if (rs.next()) {
                 for (String nameObject : nameColumnBase) {
                     listValue.add(rs.getObject(nameObject));
@@ -187,21 +188,20 @@ public class SqlHelper {
         try {
             concreteObject = (T) object.newInstance();
         } catch (InstantiationException e) {
-           logger.info("This object don't instance,check method createConcreteObject",e);
+            logger.info("This object don't instance,check method createConcreteObject", e);
         } catch (IllegalAccessException e) {
             throw new NotFieldException("This field don't exist");
         }
         return concreteObject;
     }
 
-    static <T> T getObjectById(Class classObject, long id) throws IllegalAccessException {
-        List<Object> listValue = getListValueBase(classObject, id);
-        Set<String> setNameBase = getSetNameBase(classObject, id);
+    static <T> T getObjectById(Object objectForName, long id) throws IllegalAccessException {
+        List<Object> listValue = getListValueBase(objectForName, id);
         T concreteObject = null;
         try {
-            concreteObject = (T) classObject.newInstance();
+            concreteObject = (T) objectForName.getClass().newInstance();
         } catch (InstantiationException e) {
-            logger.info("This object don't instance,check method getObjectById",e);
+            logger.info("This object don't instance,check method getObjectById", e);
         }
         Field[] fields = concreteObject.getClass().getSuperclass().getDeclaredFields();
 

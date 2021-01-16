@@ -1,5 +1,8 @@
 package org.example;
 
+import org.apache.log4j.Logger;
+import org.example.exception.UnknownClassException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -9,11 +12,18 @@ import java.util.List;
 
 public class PackageHelper {
 
-    public static Class[] getClasses(String packageName) throws ClassNotFoundException, IOException {
+    final static Logger logger = Logger.getLogger(PackageHelper.class);
+
+    public static Class[] getClasses(String packageName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         assert classLoader != null;
         String path = packageName.replace('.', '/');
-        Enumeration<URL> resources = classLoader.getResources(path);
+        Enumeration<URL> resources = null;
+        try {
+            resources = classLoader.getResources(path);
+        } catch (IOException e) {
+            logger.info("Check methods getClasses", e);
+        }
         List<File> dirs = new ArrayList<File>();
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();
@@ -26,7 +36,7 @@ public class PackageHelper {
         return classes.toArray(new Class[classes.size()]);
     }
 
-    public static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
+    public static List<Class> findClasses(File directory, String packageName) {
         List<Class> classes = new ArrayList<Class>();
         if (!directory.exists()) {
             return classes;
@@ -37,7 +47,11 @@ public class PackageHelper {
                 assert !file.getName().contains(".");
                 classes.addAll(findClasses(file, packageName + "." + file.getName()));
             } else if (file.getName().endsWith(".class")) {
-                classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+                try {
+                    classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+                } catch (ClassNotFoundException e) {
+                    throw new UnknownClassException("This class not found");
+                }
             }
         }
         return classes;
