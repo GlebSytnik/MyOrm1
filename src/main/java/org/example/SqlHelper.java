@@ -6,7 +6,6 @@ import org.example.exception.BadConnectionExeception;
 import org.example.exception.NotFieldException;
 import org.example.exception.NotListValueBaseException;
 import org.example.exception.NotSetNameBaseException;
-
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
