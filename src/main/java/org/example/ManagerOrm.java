@@ -4,9 +4,6 @@ import org.apache.log4j.Logger;
 import org.example.exception.BadConnectionExeception;
 import org.example.exception.NotFieldException;
 import org.example.exception.NotValueObjectException;
-import org.example.exception.UnknownClassException;
-
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
@@ -29,7 +26,7 @@ public class ManagerOrm {
     }
 
     public static <T> T insert(T objectClass) {
-        Long id = SqlHelper.executeInsert(SqlHelper.getInsertSqlStringReturnId(objectClass, ParsingObject.getNameAndValueField(objectClass)));
+        Long id = SqlHelper.executeInsert(SqlHelper.getInsertSqlStringReturnId(objectClass.getClass(), ParsingObject.getNameAndValueField(objectClass)));
         Class<?> classObjectParents = objectClass.getClass().getSuperclass();
         Field field;
         try {

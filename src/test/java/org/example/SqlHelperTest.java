@@ -1,6 +1,5 @@
 package org.example;
 
-import org.example.db.ConnectionHolderPostgres;
 import org.example.entity.Entity;
 import org.example.exception.NotFieldException;
 import org.junit.Before;
@@ -19,15 +18,13 @@ public class SqlHelperTest {
 
     @Before
     public void setUp() {
-        entity = new Entity( "Roma", "Det", "gmail");
+        entity = new Entity( "Матроскин", "Кот", "matroskin.com");
         nameAndValueField = new LinkedHashMap<>();
-        nameAndValueField.put("id", "1");
-        nameAndValueField.put("firstName", "Roma");
-        nameAndValueField.put("lastName", "Det");
-        nameAndValueField.put("email", "gmail");
+        nameAndValueField.put("firstName", "Кот");
+        nameAndValueField.put("lastName", "Матроскин");
+        nameAndValueField.put("email", "matroskin.com");
 
         nameAndTypeField = new LinkedHashMap<>();
-        nameAndTypeField.put("id", Integer.class);
         nameAndTypeField.put("firstName", String.class);
         nameAndTypeField.put("lastName", String.class);
         nameAndTypeField.put("email", String.class);
@@ -41,49 +38,49 @@ public class SqlHelperTest {
     @Test
     public void createTable() throws SQLException {
         String expected = SqlHelper.createTable(entity.getClass());
-        String actual = "create table if not exists entity ( id INTEGER,firstName VARCHAR,lastName VARCHAR,email VARCHAR );";
+        String actual = "create table if not exists  entity ( id SERIAL ,firstName VARCHAR,lastName VARCHAR,email VARCHAR ) ;";
         assertEquals(expected, actual);
     }
 
     @Test
     public void getSqlQueryCreate() {
         String expected = SqlHelper.getSqlQueryCreate(nameAndTypeField, entity.getClass());
-        String actual = "create table if not exists entity ( id INTEGER,firstName VARCHAR,lastName VARCHAR,email VARCHAR );";
+        String actual = "create table if not exists  entity ( id SERIAL ,firstName VARCHAR,lastName VARCHAR,email VARCHAR ) ;";
         assertEquals(expected, actual);
     }
 
     @Test
     public void getInsertSql() {
-        String expected = SqlHelper.getInsertSqlStringReturnId(entity, nameAndValueField);
-        String actual = "insert into  entity (id ,firstName ,lastName ,email ) VALUES ( '1' ,'Roma' ,'Det' ,'gmail'  );";
+        String expected = SqlHelper.getInsertSqlStringReturnId(entity.getClass(), nameAndValueField);
+        String actual = "insert into  entity (firstName ,lastName ,email ) VALUES ( 'Кот' ,'Матроскин' ,'matroskin.com'  ) RETURNING id;";
         assertEquals(expected, actual);
     }
 
     @Test
     public void getInsertFieldsNameSqlBuilder() {
         String expected = SqlHelper.getInsertFieldsNameSqlBuilder(nameAndValueField);
-        String actual = "id ,firstName ,lastName ,email ";
+        String actual = "firstName ,lastName ,email ";
         assertEquals(expected, actual);
     }
 
     @Test
     public void getInsertFieldsValueSqlBuilder() {
         String expected = SqlHelper.getInsertFieldsValueSqlBuilder(nameAndValueField);
-        String actual = "'1' ,'Roma' ,'Det' ,'gmail' ";
+        String actual = "'Кот' ,'Матроскин' ,'matroskin.com' ";
         assertEquals(expected, actual);
     }
 
     @Test
     public void getSqlUpdate() {
-        String expected = SqlHelper.getSqlUpdate(1, entity.getClass(), nameAndValueField);
-        String actual = "update entity  set  id = '1' ,firstName = 'Roma' ,lastName = 'Det' ,email = 'gmail'   WHERE id = 1 ;";
+        String expected = SqlHelper.getSqlUpdate(1, entity, nameAndValueField);
+        String actual = "update entity  set  firstName = 'Кот' ,lastName = 'Матроскин' ,email = 'matroskin.com'   WHERE id = 1 ;";
         assertEquals(expected, actual);
     }
 
     @Test
     public void getFieldAndValueSqlUpdate() {
         String expected = SqlHelper.getFieldAndValueSqlUpdate(nameAndValueField);
-        String actual = "id = '1' ,firstName = 'Roma' ,lastName = 'Det' ,email = 'gmail' ";
+        String actual = "firstName = 'Кот' ,lastName = 'Матроскин' ,email = 'matroskin.com' ";
         assertEquals(expected, actual);
     }
 
@@ -117,9 +114,9 @@ public class SqlHelperTest {
         List<Object> expected = SqlHelper.getListValueBase(entity, 1);
         List<Object> actual = new ArrayList<>();
         actual.add(0, 1);
-        actual.add(1, "Roma");
-        actual.add(2, "Las");
-        actual.add(3, "gmail");
+        actual.add(1, "Кот");
+        actual.add(2, "Матроскин");
+        actual.add(3, "matroskin.com");
         assertEquals(expected, actual);
     }
 
@@ -127,9 +124,9 @@ public class SqlHelperTest {
     public void createConcreteObject() {
         Entity expectedEntity = SqlHelper.createConcreteObject(entity.getClass());
         expectedEntity.setId(1L);
-        expectedEntity.setFirstName("Roma");
-        expectedEntity.setLastName("Det");
-        expectedEntity.setEmail("gmail");
+        expectedEntity.setFirstName("Кот");
+        expectedEntity.setLastName("Матроскин");
+        expectedEntity.setEmail("matroskin.com");
         Entity actual = entity;
         assertTrue(expectedEntity.equals(actual));
     }
@@ -143,10 +140,9 @@ public class SqlHelperTest {
            throw new NotFieldException("This field don't exist");
         }
         Entity actual = new Entity();
-        actual.setId(1L);
-        actual.setFirstName("Roma");
-        actual.setLastName("Las");
-        actual.setEmail("gmail");
+        actual.setFirstName("Кот");
+        actual.setLastName("Матроскин");
+        actual.setEmail("matroskin.com");
         assertTrue(expectedEntity.equals(actual));
     }
 }
