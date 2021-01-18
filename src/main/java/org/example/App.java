@@ -9,6 +9,7 @@ public class App {
         Entity entity = new Entity("Кот", "Матроскин", "matroskin.com");
         entity = ManagerOrm.insert(entity);
         Entity entity1 = ManagerOrm.getObjectById(entity, 1);
+        System.out.println(entity1.toString());
     }
 }
 

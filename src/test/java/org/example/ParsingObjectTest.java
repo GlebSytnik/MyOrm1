@@ -14,7 +14,7 @@ public class ParsingObjectTest {
 
     @Before
     public void setUp() {
-        entity = new Entity( "Roma", "Det", "gmail");
+        entity = new Entity( "Матроскин", "Кот", "matroskin.com");
     }
 
     @Test
@@ -36,7 +36,7 @@ public class ParsingObjectTest {
     public void getNameAndTypeField() {
         Map<String, Object> expected = ParsingObject.getNameAndTypeField(entity.getClass());
         Map<String, Object> actual = new LinkedHashMap<>();
-        actual.put("id", Integer.class);
+
         actual.put("firstName", String.class);
         actual.put("lastName", String.class);
         actual.put("email", String.class);
@@ -47,17 +47,16 @@ public class ParsingObjectTest {
     public void getNameAndValueField() {
         Map<String, String> expected = ParsingObject.getNameAndValueField(entity);
         Map<String, String> actual = new LinkedHashMap<>();
-        actual.put("id", "1");
-        actual.put("firstName", "Roma");
-        actual.put("lastName", "Det");
-        actual.put("email", "gmail");
+        actual.put("firstName", "Матроскин");
+        actual.put("lastName", "Кот");
+        actual.put("email", "matroskin.com");
         assertEquals(expected, actual);
     }
 
     @Test
     public void getValue() {
-        Object expected = ParsingObject.getValue(entity, "id");
-        Object actual = 1;
+        Object expected = ParsingObject.getValue(entity, "firstName");
+        Object actual = "Матроскин";
         assertEquals(expected, actual);
     }
 

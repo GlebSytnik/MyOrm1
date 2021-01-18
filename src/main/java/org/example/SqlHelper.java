@@ -74,7 +74,7 @@ public class SqlHelper {
         return fields.toString();
     }
 
-    static String getInsertSqlStringReturnId(Object objectForTable, Map<String, String> nameAndValueField) {
+    static String getInsertSqlStringReturnId(Class objectForTable, Map<String, String> nameAndValueField) {
         String nameTable = ParsingObject.getNameTable(objectForTable);
         String valueField = getInsertFieldsValueSqlBuilder(nameAndValueField);
         String nameField = getInsertFieldsNameSqlBuilder(nameAndValueField);
@@ -138,7 +138,7 @@ public class SqlHelper {
     }
 
     static String getStringFindById(long id, Object objectForTable) {
-        String name = ParsingObject.getNameTable(objectForTable);
+        String name = ParsingObject.getNameTable(objectForTable.getClass());
         String result = String.format("SELECT * FROM %s WHERE id = %d", name, id);
         return result;
     }

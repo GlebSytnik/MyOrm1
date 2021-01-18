@@ -26,7 +26,7 @@ public class ManagerOrm {
     }
 
     public static <T> T insert(T objectClass) {
-        Long id = SqlHelper.executeInsert(SqlHelper.getInsertSqlStringReturnId(objectClass, ParsingObject.getNameAndValueField(objectClass)));
+        Long id = SqlHelper.executeInsert(SqlHelper.getInsertSqlStringReturnId(objectClass.getClass(), ParsingObject.getNameAndValueField(objectClass)));
         Class<?> classObjectParents = objectClass.getClass().getSuperclass();
         Field field;
         try {

@@ -3,15 +3,19 @@ package org.example;
 import org.example.exception.NotNameAndTypeFieldException;
 import org.example.exception.NotValueObjectException;
 import org.example.exception.UnknownObjectTypeExeception;
-
 import java.lang.reflect.Field;
 import java.util.*;
 
 public class ParsingObject {
 
-    public static String getNameTable(Object objectForTable) {
-        String name = objectForTable.getClass().getSimpleName().toLowerCase();
+    public static String getNameTable(Class objectForTable) {
+        String name = objectForTable.getSimpleName().toLowerCase();
         return name;
+    }
+
+    public static String getNameTableWithClass(Class objectForTable){
+        String getAllClassName = objectForTable.getSimpleName().toLowerCase();
+        return getAllClassName;
     }
 
     public static String getTypeObject(Object objectForTable) {
